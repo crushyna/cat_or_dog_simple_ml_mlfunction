@@ -4,6 +4,8 @@ import json
 
 import azure.functions as func
 
+MODELS_DIR = 'models'
+
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')

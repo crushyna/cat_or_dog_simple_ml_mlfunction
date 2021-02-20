@@ -1,0 +1,14 @@
+catordog_model_07_.h5
+loss: 0.1920 - accuracy: 0.9210 - val_loss: 0.2776 - val_accuracy: 0.8949
+
+catordog_model_06_.h5
+loss: 0.2219 - accuracy: 0.9078 - val_loss: 0.2859 - val_accuracy: 0.8852
+
+catordog_model_05_.h5
+loss: 0.1723 - accuracy: 0.9296 - val_loss: 0.3093 - val_accuracy: 0.8814
+
+'catordog_model_04_.h5'
+loss: 0.1589 - accuracy: 0.9352 - val_loss: 0.5062 - val_accuracy: 0.8225
+
+catordog_model_03_.h5
+loss: 0.2643 - accuracy: 0.8869 - val_loss: 0.5100 - val_accuracy: 0.8181

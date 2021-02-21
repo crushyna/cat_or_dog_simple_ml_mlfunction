@@ -44,14 +44,15 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # Check dimensions
         img2 = Image.open(temp_filename)
-        width, height = img2.size
-        if width or height != 160:
+        (width, height) = img2.size
+        logging.info(f"Saved file dimensions: {width} x {height}")
+        if (width, height) != (160, 160):
             return func.HttpResponse(json.dumps({'message': 'input image has incorrect dimensions',
                                                  'data': 'none',
                                                  'status': 'error'}),
                                      mimetype="application/json", status_code=400)
 
-        logging.info(f"Saved file dimensions: {width} x {height}")
+        # logging.info(f"Saved file dimensions: {width} x {height}")
 
         # Load with Tensorflow
         logging.info("Loading image with Tensorflow")

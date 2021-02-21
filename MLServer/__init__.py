@@ -47,6 +47,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         width, height = img2.size
         if width or height != 160:
             return func.HttpResponse(json.dumps({'message': 'input image has incorrect dimensions',
+                                                 'data': 'none',
                                                  'status': 'error'}),
                                      mimetype="application/json", status_code=400)
 
@@ -78,5 +79,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     else:
         return func.HttpResponse(json.dumps({'message': 'improper or no input data',
+                                             'data': 'none',
                                              'status': 'error'}),
                                  mimetype="application/json", status_code=400)

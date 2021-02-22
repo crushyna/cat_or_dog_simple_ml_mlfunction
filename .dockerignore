@@ -1,1 +1,4 @@
 local.settings.json
+.git/
+.idea/
+venv/

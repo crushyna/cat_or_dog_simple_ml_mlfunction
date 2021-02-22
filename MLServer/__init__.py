@@ -35,7 +35,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info(f"Received image of size: {file_size} bytes")
 
         # Save image locally
-        temp_filename = "temp_image.jpg"
+        temp_filename = f"temp_image_{timestamp}.jpg"
         logging.info('Saving binary data...')
         with open(temp_filename, 'wb') as img:
             img.write(base_64_image_bytes)
@@ -52,10 +52,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                                  'status': 'error'}),
                                      mimetype="application/json", status_code=400)
 
-        # logging.info(f"Saved file dimensions: {width} x {height}")
-
         # Load with Tensorflow
-        logging.info("Loading image with Tensorflow")
+        logging.info("Processing image with Tensorflow")
         img = tf.keras.preprocessing.image.load_img(temp_filename, target_size=(height, width))
         img_array = tf.keras.preprocessing.image.img_to_array(img)
         img_array = tf.expand_dims(img_array, 0)
@@ -71,6 +69,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         score = tf.nn.softmax(predictions[0])
 
         # Remove temporary file
+        logging.info("Removing temporary image file")
         os.remove(temp_filename)
 
         return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),

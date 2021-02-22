@@ -1,4 +1,3 @@
-import io
 import logging
 import os.path
 import json
@@ -36,14 +35,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info(f"Received image of size: {file_size} bytes")
 
         # Save image locally
-        # stream = io.BytesIO(base_64_image_bytes)
-        temp_filename = f"temp_image{timestamp}.jpg"
+        temp_filename = "temp_image.jpg"
         logging.info('Saving binary data...')
         with open(temp_filename, 'wb') as img:
             img.write(base_64_image_bytes)
-        img = Image.open(temp_filename)
-        # img.save(temp_filename)
         logging.info(f"File saved: {os.path.isfile(temp_filename)}")
+        img = Image.open(temp_filename)
 
         # Check dimensions
         img2 = Image.open(temp_filename)

@@ -4,6 +4,7 @@ import json
 import sys
 import azure.functions as func
 import tensorflow as tf
+import pathlib
 from numpy import argmax
 from PIL import Image
 from datetime import datetime
@@ -60,7 +61,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # Load model
         logging.info("Loading Tensorflow model")
-        model = tf.keras.models.load_model('catordog_model_07_.h5')
+        model = tf.keras.models.load_model(os.path.join(pathlib.Path(__file__).parent, 'catordog_model_07_.h5'))
 
         # Make predictions
         logging.info("Making predictions")

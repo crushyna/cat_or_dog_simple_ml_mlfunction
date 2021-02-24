@@ -5,7 +5,7 @@ import sys
 import azure.functions as func
 import tensorflow as tf
 import pathlib
-from numpy import argmax
+from numpy import argmax, min, max
 from PIL import Image
 from datetime import datetime
 
@@ -68,15 +68,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         class_names = ['cat', 'dog']
         predictions = model.predict(img_array)
         score = tf.nn.softmax(predictions[0])
+        score_diff = max(score) - min(score)
 
         # Remove temporary file
         logging.info("Removing temporary image file")
         os.remove(temp_filename)
 
-        return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),
-                                             'data': str(score.numpy()),
-                                             'status': 'success'}),
-                                 mimetype="application/json", status_code=200)
+        if score_diff >= 0.5:
+            return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),
+                                                 'data': str(score.numpy()),
+                                                 'status': 'success'}),
+                                     mimetype="application/json", status_code=200)
+        else:
+            return func.HttpResponse(json.dumps({'message': 'unknown',
+                                                 'data': str(score.numpy()),
+                                                 'status': 'success'}),
+                                     mimetype="application/json", status_code=200)
 
     else:
         return func.HttpResponse(json.dumps({'message': 'improper or no input data',

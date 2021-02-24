@@ -74,7 +74,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info("Removing temporary image file")
         os.remove(temp_filename)
 
-        if score_diff >= 0.5:
+        if score_diff >= 0.2:
             return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),
                                                  'data': str(score.numpy()),
                                                  'status': 'success'}),

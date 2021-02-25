@@ -73,12 +73,17 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # Remove temporary file
         logging.info("Removing temporary image file")
         os.remove(temp_filename)
-
-        if score_diff >= 0.2:
-            return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),
-                                                 'data': str(score.numpy()),
-                                                 'status': 'success'}),
-                                     mimetype="application/json", status_code=200)
+        if max(score) > 0.8:
+            if score_diff >= 0.4:
+                return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),
+                                                     'data': str(score.numpy()),
+                                                     'status': 'success'}),
+                                         mimetype="application/json", status_code=200)
+            else:
+                return func.HttpResponse(json.dumps({'message': 'unknown',
+                                                     'data': str(score.numpy()),
+                                                     'status': 'success'}),
+                                         mimetype="application/json", status_code=200)
         else:
             return func.HttpResponse(json.dumps({'message': 'unknown',
                                                  'data': str(score.numpy()),

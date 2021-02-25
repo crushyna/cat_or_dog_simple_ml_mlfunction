@@ -76,17 +76,29 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         if max(score) > 0.8:
             if score_diff >= 0.4:
                 return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),
-                                                     'data': str(score.numpy()),
+                                                     'data': {
+                                                         'scores': str(score.numpy()),
+                                                         'classes': str(class_names),
+                                                         'score_diff': str(score_diff)
+                                                     },
                                                      'status': 'success'}),
                                          mimetype="application/json", status_code=200)
             else:
                 return func.HttpResponse(json.dumps({'message': 'unknown',
-                                                     'data': str(score.numpy()),
+                                                     'data': {
+                                                         'scores': str(score.numpy()),
+                                                         'classes': str(class_names),
+                                                         'score_diff': str(score_diff)
+                                                     },
                                                      'status': 'success'}),
                                          mimetype="application/json", status_code=200)
         else:
             return func.HttpResponse(json.dumps({'message': 'unknown',
-                                                 'data': str(score.numpy()),
+                                                 'data': {
+                                                         'scores': str(score.numpy()),
+                                                         'classes': str(class_names),
+                                                         'score_diff': str(score_diff)
+                                                     },
                                                  'status': 'success'}),
                                      mimetype="application/json", status_code=200)
 

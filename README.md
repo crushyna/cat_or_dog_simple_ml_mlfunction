@@ -4,6 +4,7 @@ Cat or Dog - Simple ML Demo Description - ML Server / Azure Function
 Supplement for [Cat or Dog Simple ML Demo](https://github.com/crushyna/cat_or_dog_simple_ml) application.
 This repository contains code for ML Server, working in Azure Function App environment.
 Can be used as Docker container locally.
+Works on FastAPI framework.
 #### When running as standalone container, make sure to bind ports: 8080:80
 
 ### Current Tensorflow statistics:

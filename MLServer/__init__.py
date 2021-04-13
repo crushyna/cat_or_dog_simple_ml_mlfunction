@@ -1,6 +1,7 @@
 import logging
 import os.path
-import json
+from typing import Union
+
 import sys
 import azure.functions as func
 import tensorflow as tf
@@ -9,10 +10,39 @@ from numpy import argmax, min, max
 from PIL import Image
 from datetime import datetime
 
+from .http_asgi import AsgiMiddleware
+from pydantic import BaseModel
+from fastapi import FastAPI, File, HTTPException, Request
+from fastapi.responses import JSONResponse
+
 MODELS_DIR = 'models'
 
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
+class ResponseData(BaseModel):
+    message: str
+    data: Union[str, dict]
+    status: str
+
+
+class NoDataException(Exception):
+    def __init__(self, text: str):
+        self.text = text
+
+
+app = FastAPI()
+
+
+@app.exception_handler(NoDataException)
+async def unicorn_exception_handler(request: Request, exc: NoDataException):
+    return JSONResponse(
+        status_code=400,
+        content={'message': f"{exc.text}",
+                 'data': 'none',
+                 'status': 'error'})
+
+
+@app.post("/api/MLServer", status_code=200, response_model=ResponseData)
+async def receive_image(file: bytes = File(...)):
     """
     Entry point for ML functions.
     Requires image to be send in request body.
@@ -21,11 +51,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     !!! IMPORTANT !!!
     File must have dimensions 160x160x3. Otherwise it won't work correctly!
 
-    :param req: func.HttpRequest
-    :return: func.HttpResponse
+    :return: json
     """
     logging.info('Python HTTP trigger function processed a request.')
-    base_64_image_bytes = req.get_body()
+    base_64_image_bytes = file
     if base_64_image_bytes:
         # Get current time data
         timestamp = datetime.now()
@@ -48,10 +77,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         (width, height) = img2.size
         logging.info(f"Saved file dimensions: {width} x {height}")
         if (width, height) != (160, 160):
-            return func.HttpResponse(json.dumps({'message': 'input image has incorrect dimensions',
-                                                 'data': 'none',
-                                                 'status': 'error'}),
-                                     mimetype="application/json", status_code=400)
+            raise NoDataException(text='input image has incorrect dimensions')
 
         # Load with Tensorflow
         logging.info("Processing image with Tensorflow")
@@ -75,35 +101,30 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         os.remove(temp_filename)
         if max(score) > 0.8:
             if score_diff >= 0.4:
-                return func.HttpResponse(json.dumps({'message': str(class_names[argmax(score)]),
-                                                     'data': {
-                                                         'scores': str(score.numpy()),
-                                                         'classes': str(class_names),
-                                                         'score_diff': str(score_diff)
-                                                     },
-                                                     'status': 'success'}),
-                                         mimetype="application/json", status_code=200)
+                return ResponseData(message=str(class_names[argmax(score)]),
+                                    data={'scores': str(score.numpy()),
+                                          'classes': str(class_names),
+                                          'score_diff': str(score_diff)
+                                          },
+                                    status='success')
             else:
-                return func.HttpResponse(json.dumps({'message': 'unknown',
-                                                     'data': {
-                                                         'scores': str(score.numpy()),
-                                                         'classes': str(class_names),
-                                                         'score_diff': str(score_diff)
-                                                     },
-                                                     'status': 'success'}),
-                                         mimetype="application/json", status_code=200)
+                return ResponseData(message='unknown',
+                                    data={'scores': str(score.numpy()),
+                                          'classes': str(class_names),
+                                          'score_diff': str(score_diff)
+                                          },
+                                    status='success')
         else:
-            return func.HttpResponse(json.dumps({'message': 'unknown',
-                                                 'data': {
-                                                         'scores': str(score.numpy()),
-                                                         'classes': str(class_names),
-                                                         'score_diff': str(score_diff)
-                                                     },
-                                                 'status': 'success'}),
-                                     mimetype="application/json", status_code=200)
+            return ResponseData(message='unknown',
+                                data={'scores': str(score.numpy()),
+                                      'classes': str(class_names),
+                                      'score_diff': str(score_diff)
+                                      },
+                                status='success')
 
     else:
-        return func.HttpResponse(json.dumps({'message': 'improper or no input data',
-                                             'data': 'none',
-                                             'status': 'error'}),
-                                 mimetype="application/json", status_code=400)
+        raise NoDataException(text='improper or no input data')
+
+
+def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+    return AsgiMiddleware(app).handle(req, context)
